@@ -145,21 +145,28 @@ function updateGreeting() {
 // ===== STREAK =====
 function updateStreak() {
     const today = new Date().toDateString();
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
 
     if (state.lastActiveDate) {
         const lastDate = new Date(state.lastActiveDate);
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        lastDate.setHours(0, 0, 0, 0);
 
-        if (lastDate.toDateString() === yesterday.toDateString()) {
-            // Last active yesterday, streak continues
-        } else if (lastDate.toDateString() !== today) {
-            // Streak broken
+        const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+            // Same day, streak unchanged
+        } else if (diffDays === 1) {
+            // Yesterday, streak continues (already incremented in completeTask)
+        } else if (diffDays > 1) {
+            // Streak broken - missed a day
             state.streak = 0;
         }
+    } else {
+        // First time using app
+        state.streak = 0;
     }
 
-    state.lastActiveDate = today;
     $('#streakCount').textContent = state.streak;
     saveState();
 }
@@ -698,15 +705,67 @@ function renderHistory() {
         return;
     }
 
-    container.innerHTML = state.history.slice(0, 50).map(item => `
-        <div class="history-item">
+    container.innerHTML = state.history.slice(0, 50).map((item, index) => `
+        <div class="history-item" data-index="${index}">
             <span class="history-item-icon">${item.icon}</span>
             <div class="history-item-info">
                 <div class="history-item-name">${item.name}</div>
                 <div class="history-item-time">${formatTime(item.completedAt)}</div>
             </div>
+            <div class="history-item-actions">
+                <button class="history-redo-btn" data-index="${index}" title="Do again">🔁</button>
+                <button class="history-delete-btn" data-index="${index}" title="Remove">🗑️</button>
+            </div>
         </div>
     `).join('');
+
+    // Add event listeners for redo buttons
+    container.querySelectorAll('.history-redo-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            redoHistoryItem(parseInt(btn.dataset.index));
+        });
+    });
+
+    // Add event listeners for delete buttons
+    container.querySelectorAll('.history-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteHistoryItem(parseInt(btn.dataset.index));
+        });
+    });
+}
+
+function redoHistoryItem(index) {
+    const item = state.history[index];
+    if (!item) return;
+
+    // Reset the chore's last done date so it shows up in suggestions
+    delete state.choreDates[item.choreId];
+
+    // Close history panel
+    $('#historyPanel').classList.add('hidden');
+
+    saveState();
+    renderSuggestions();
+    showToast(`🔁 ${item.name} added back to tasks!`);
+}
+
+function deleteHistoryItem(index) {
+    const item = state.history[index];
+    if (!item) return;
+
+    state.history.splice(index, 1);
+
+    // Adjust stats
+    if (state.choresCompleted > 0) state.choresCompleted--;
+    state.totalTimeSpent -= item.duration || 0;
+    if (state.totalTimeSpent < 0) state.totalTimeSpent = 0;
+
+    saveState();
+    renderHistory();
+    renderProfileStats();
+    showToast('🗑️ Removed from history');
 }
 
 function formatTime(timestamp) {
