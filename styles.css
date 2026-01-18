@@ -279,20 +279,20 @@ body {
     }
 }
 
-/* ===== GREETING CARD ===== */
-.greeting-card {
+/* ===== COMBINED GREETING + TIME CARD ===== */
+.greeting-time-card {
     background: var(--glass-bg);
     border: 2px solid var(--glass-border);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
     animation: slideInDown 0.5s ease-out;
-    box-shadow: 0 10px 40px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 8px 30px rgba(168, 85, 247, 0.15);
 }
 
 @keyframes slideInDown {
@@ -308,45 +308,34 @@ body {
 }
 
 .greeting-avatar {
-    font-size: 2.5rem;
-    width: 60px;
-    height: 60px;
+    font-size: 1.8rem;
+    width: 44px;
+    height: 44px;
     background: var(--gradient-cute);
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 15px rgba(253, 164, 175, 0.4);
-    animation: avatarFloat 3s ease-in-out infinite;
+    flex-shrink: 0;
 }
 
-@keyframes avatarFloat {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-5px);
-    }
-}
-
-.greeting-text {
+.greeting-info {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 2px;
 }
 
 .greeting-hello {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     opacity: 0.85;
 }
 
-.greeting-name {
-    font-size: 1.3rem;
+.current-time {
+    font-size: 1.4rem;
     font-weight: 700;
-    background: var(--gradient-sunset);
+    background: var(--gradient-cute);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -354,29 +343,16 @@ body {
 
 .streak-badge {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    border-radius: var(--radius-lg);
-    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    padding: 6px 12px;
     display: flex;
     align-items: center;
     gap: 4px;
     box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
-    animation: streakGlow 2s ease-in-out infinite;
-}
-
-@keyframes streakGlow {
-
-    0%,
-    100% {
-        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
-    }
-
-    50% {
-        box-shadow: 0 4px 25px rgba(251, 191, 36, 0.7);
-    }
 }
 
 .streak-fire {
-    font-size: 1.2rem;
+    font-size: 1rem;
     animation: fireWiggle 0.5s ease-in-out infinite;
 }
 
@@ -394,11 +370,12 @@ body {
 
 .streak-count {
     font-weight: 700;
+    font-size: 0.95rem;
     color: #1f2937;
 }
 
-/* ===== TIME CARD ===== */
-.time-card {
+/* ===== SCORE DASHBOARD ===== */
+.score-dashboard {
     background: var(--glass-bg);
     border: 2px solid var(--glass-border);
     border-radius: var(--radius-lg);
@@ -407,67 +384,41 @@ body {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    gap: var(--spacing-md);
     animation: slideInDown 0.5s ease-out 0.1s both;
     box-shadow: 0 8px 30px rgba(168, 85, 247, 0.15);
 }
 
-.time-display {
+.score-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
 }
 
-.current-time {
-    font-size: 1.8rem;
+.score-value {
+    font-size: 1.3rem;
     font-weight: 700;
-    background: var(--gradient-cute);
+    background: var(--gradient-sunset);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.current-date {
-    font-size: 0.85rem;
-    opacity: 0.9;
-    font-weight: 500;
+.score-label {
+    font-size: 0.7rem;
+    opacity: 0.75;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
-.time-emoji {
-    font-size: 1.8rem;
-    animation: emojiFloat 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+.score-divider {
+    width: 1px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.2);
 }
-
-.time-emoji:first-of-type {
-    animation-delay: 0s;
-}
-
-.time-emoji:last-of-type {
-    animation-delay: 1s;
-}
-
-@keyframes emojiFloat {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(-5deg) scale(1);
-    }
-
-    25% {
-        transform: translateY(-8px) rotate(5deg) scale(1.1);
-    }
-
-    50% {
-        transform: translateY(-4px) rotate(-3deg) scale(1.05);
-    }
-
-    75% {
-        transform: translateY(-10px) rotate(8deg) scale(1.15);
-    }
 }
 
 /* ===== SECTIONS ===== */

@@ -53,12 +53,12 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Greeting Card -->
-            <div class="greeting-card" id="greetingCard">
+            <!-- Combined Greeting + Time Card -->
+            <div class="greeting-time-card" id="greetingTimeCard">
                 <div class="greeting-avatar" id="greetingAvatar">🌸</div>
-                <div class="greeting-text">
-                    <span class="greeting-hello" id="greetingHello">Good morning!</span>
-                    <span class="greeting-name" id="greetingName">Sunshine ✨</span>
+                <div class="greeting-info">
+                    <span class="greeting-hello" id="greetingHello">Good afternoon!</span>
+                    <span class="current-time" id="currentTime">2:47 PM</span>
                 </div>
                 <div class="streak-badge" id="streakBadge">
                     <span class="streak-fire">🔥</span>
@@ -66,14 +66,22 @@
                 </div>
             </div>
 
-            <!-- Time Card -->
-            <div class="time-card" id="timeCard">
-                <span class="time-emoji" id="timeEmoji">✨</span>
-                <div class="time-display">
-                    <span class="current-time" id="currentTime">12:00 PM</span>
-                    <span class="current-date" id="currentDate">Saturday, Jan 18</span>
+            <!-- Weekly Score Dashboard -->
+            <div class="score-dashboard" id="scoreDashboard">
+                <div class="score-item">
+                    <span class="score-value" id="weeklyScore">0/10</span>
+                    <span class="score-label">This Week</span>
                 </div>
-                <span class="time-emoji" id="timeEmoji2">💫</span>
+                <div class="score-divider"></div>
+                <div class="score-item">
+                    <span class="score-value" id="todayScore">0</span>
+                    <span class="score-label">Today</span>
+                </div>
+                <div class="score-divider"></div>
+                <div class="score-item">
+                    <span class="score-value" id="totalScore">0</span>
+                    <span class="score-label">All Time</span>
+                </div>
             </div>
 
             <!-- Mood Section -->

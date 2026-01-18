@@ -137,9 +137,32 @@ function updateGreeting() {
     else if (hour >= 21 || hour < 5) greeting = 'Good night!';
 
     $('#greetingHello').textContent = greeting;
-    $('#greetingName').textContent = state.name + ' ✨';
     $('#greetingAvatar').textContent = state.avatar;
     $('#streakCount').textContent = state.streak;
+
+    // Update score dashboard
+    updateScoreDashboard();
+}
+
+// ===== SCORE DASHBOARD =====
+function updateScoreDashboard() {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+    // Get start of week (Sunday)
+    const dayOfWeek = now.getDay();
+    const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+
+    // Count tasks done today
+    const todayCount = state.history.filter(item => item.completedAt >= todayStart).length;
+
+    // Count tasks done this week
+    const weekCount = state.history.filter(item => item.completedAt >= weekStart).length;
+
+    // Update display
+    $('#todayScore').textContent = todayCount;
+    $('#weeklyScore').textContent = `${weekCount}/10`;
+    $('#totalScore').textContent = state.choresCompleted;
 }
 
 // ===== STREAK =====
@@ -957,29 +980,14 @@ if ('serviceWorker' in navigator) {
     });
 }
 // ===== TIME DISPLAY =====
-const TIME_EMOJIS = ['✨', '💫', '🌟', '⭐', '💖', '🦋', '🌸', '🎀'];
-
 function initTimeWeather() {
     updateTime();
     setInterval(updateTime, 1000);
-
-    // Rotate emojis every 3 seconds for fun effect
-    setInterval(rotateEmojis, 3000);
 }
 
 function updateTime() {
     const now = new Date();
     const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
-    const dateOpts = { weekday: 'long', month: 'short', day: 'numeric' };
 
     $('#currentTime').textContent = now.toLocaleTimeString('en-US', timeOpts);
-    $('#currentDate').textContent = now.toLocaleDateString('en-US', dateOpts);
-}
-
-function rotateEmojis() {
-    const emoji1 = TIME_EMOJIS[Math.floor(Math.random() * TIME_EMOJIS.length)];
-    const emoji2 = TIME_EMOJIS[Math.floor(Math.random() * TIME_EMOJIS.length)];
-
-    if ($('#timeEmoji')) $('#timeEmoji').textContent = emoji1;
-    if ($('#timeEmoji2')) $('#timeEmoji2').textContent = emoji2;
 }
