@@ -33,6 +33,13 @@ let state = {
     avatar: '🌸',
     name: 'Sunshine',
 
+    // Day Schedule (in hours, 24h format)
+    dayStartHour: 8,
+    dayEndHour: 23,
+
+    // Theme
+    theme: 'unicorn',
+
     // Mood
     mood: 3,
 
@@ -69,6 +76,7 @@ const $$ = (sel) => document.querySelectorAll(sel);
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
+    applyTheme(state.theme);
     initSparkles();
     initFloatingHearts();
     initMoodInputs();
@@ -83,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     checkReminder();
     updateStreak();
     initTimeWeather();
+    initThemeListeners();
 });
 
 // ===== SPARKLE BACKGROUND =====
@@ -312,6 +321,23 @@ function initEventListeners() {
     // Modal
     $('#modalCancel').addEventListener('click', closeAddModal);
     $('#modalSave').addEventListener('click', saveNewItem);
+
+    // Day schedule inputs
+    $('#dayStartInput').addEventListener('change', (e) => {
+        const [hours] = e.target.value.split(':').map(Number);
+        state.dayStartHour = hours;
+        updateDayProgressLabel();
+        updateTime();
+        saveState();
+    });
+
+    $('#dayEndInput').addEventListener('change', (e) => {
+        const [hours] = e.target.value.split(':').map(Number);
+        state.dayEndHour = hours;
+        updateDayProgressLabel();
+        updateTime();
+        saveState();
+    });
 }
 
 // ===== PROFILE STATS =====
@@ -324,6 +350,10 @@ function renderProfileStats() {
     const hours = Math.floor(state.totalTimeSpent / 3600000);
     const mins = Math.floor((state.totalTimeSpent % 3600000) / 60000);
     $('#totalTime').textContent = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+
+    // Set day schedule inputs
+    $('#dayStartInput').value = state.dayStartHour.toString().padStart(2, '0') + ':00';
+    $('#dayEndInput').value = state.dayEndHour.toString().padStart(2, '0') + ':00';
 }
 
 // ===== EDITABLE LISTS =====
@@ -560,6 +590,10 @@ function renderSuggestions() {
                     </span>
                     <span class="chore-last-done">${getLastDoneText(chore.id)}</span>
                 </div>
+                <div class="chore-suggested-time">
+                    <span class="suggested-time-icon">⏰</span>
+                    <span>${getSuggestedTime(chore)}</span>
+                </div>
             </div>
         </div>
     `).join('');
@@ -567,6 +601,23 @@ function renderSuggestions() {
     $$('.chore-card').forEach(card => {
         card.addEventListener('click', () => startTask(card.dataset.choreId));
     });
+}
+
+// Get suggested time to do a chore based on energy level
+function getSuggestedTime(chore) {
+    const energy = chore.energyRequired || 3;
+
+    // Low energy chores (1-2): suggest evening/relaxed times
+    // Medium energy (3): flexible, morning or afternoon
+    // High energy (4-5): suggest morning when fresh
+
+    if (energy <= 2) {
+        return 'Best: Evening or anytime';
+    } else if (energy === 3) {
+        return 'Best: Morning or Afternoon';
+    } else {
+        return 'Best: Morning (when fresh!)';
+    }
 }
 
 // ===== TASK MANAGEMENT =====
@@ -926,6 +977,9 @@ function saveState() {
     const toSave = {
         avatar: state.avatar,
         name: state.name,
+        dayStartHour: state.dayStartHour,
+        dayEndHour: state.dayEndHour,
+        theme: state.theme,
         mood: state.mood,
         focusChoreId: state.focusChoreId,
         choresCompleted: state.choresCompleted,
@@ -947,6 +1001,9 @@ function loadState() {
             const parsed = JSON.parse(saved);
             state.avatar = parsed.avatar || '🌸';
             state.name = parsed.name || 'Sunshine';
+            state.dayStartHour = parsed.dayStartHour ?? 8;
+            state.dayEndHour = parsed.dayEndHour ?? 23;
+            state.theme = parsed.theme || 'unicorn';
             state.mood = parsed.mood || 3;
             state.focusChoreId = parsed.focusChoreId || null;
             state.choresCompleted = parsed.choresCompleted || 0;
@@ -965,24 +1022,141 @@ function loadState() {
                     $('#focusModeBtn').innerHTML = `<span>🎯</span> Focus: ${chore.icon}`;
                 }
             }
+
+            // Update day progress label with saved times
+            updateDayProgressLabel();
         }
     } catch (e) {
         console.error('Failed to load state:', e);
     }
 }
 
-// ===== SERVICE WORKER REGISTRATION =====
+// ===== SERVICE WORKER REGISTRATION WITH AUTO-UPDATE =====
+let newWorkerWaiting = null;
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('SW registered:', reg.scope))
+            .then(registration => {
+                console.log('SW registered:', registration.scope);
+
+                // Check for updates immediately
+                registration.update();
+
+                // Listen for new service worker installing
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('New service worker found, installing...');
+
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // New update available!
+                                console.log('New version available!');
+                                newWorkerWaiting = newWorker;
+                                showUpdateNotification();
+                            } else {
+                                // First install
+                                console.log('App ready for offline use');
+                            }
+                        }
+                    });
+                });
+
+                // Check if there's already a waiting service worker
+                if (registration.waiting) {
+                    newWorkerWaiting = registration.waiting;
+                    showUpdateNotification();
+                }
+            })
             .catch(err => console.log('SW registration failed:', err));
+
+        // Handle controller change (reload page when new SW takes over)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('New service worker activated, reloading...');
+            window.location.reload();
+        });
     });
+
+    // Check for updates periodically (every 30 minutes)
+    setInterval(() => {
+        navigator.serviceWorker.getRegistration().then(registration => {
+            if (registration) {
+                registration.update();
+            }
+        });
+    }, 30 * 60 * 1000);
 }
+
+// ===== UPDATE NOTIFICATION =====
+function showUpdateNotification() {
+    // Create update banner if it doesn't exist
+    if (!$('#updateBanner')) {
+        const banner = document.createElement('div');
+        banner.id = 'updateBanner';
+        banner.className = 'update-banner';
+        banner.innerHTML = `
+            <div class="update-content">
+                <span class="update-icon">✨</span>
+                <div class="update-text">
+                    <strong>New version available!</strong>
+                    <span>Tap to update CleanNow</span>
+                </div>
+            </div>
+            <div class="update-actions">
+                <button class="update-btn" id="updateBtn">Update Now</button>
+                <button class="update-dismiss" id="dismissUpdateBtn">Later</button>
+            </div>
+        `;
+        document.body.appendChild(banner);
+
+        // Add event listeners
+        $('#updateBtn').addEventListener('click', applyUpdate);
+        $('#dismissUpdateBtn').addEventListener('click', dismissUpdateBanner);
+
+        // Animate in
+        setTimeout(() => banner.classList.add('show'), 100);
+    }
+}
+
+function applyUpdate() {
+    if (newWorkerWaiting) {
+        // Tell the waiting service worker to skip waiting
+        newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
+        showToast('🔄 Updating app...');
+    }
+    dismissUpdateBanner();
+}
+
+function dismissUpdateBanner() {
+    const banner = $('#updateBanner');
+    if (banner) {
+        banner.classList.remove('show');
+        setTimeout(() => banner.remove(), 300);
+    }
+}
+
 // ===== TIME DISPLAY =====
 function initTimeWeather() {
     updateTime();
+    updateDayProgressLabel();
     setInterval(updateTime, 1000);
+}
+
+function updateDayProgressLabel() {
+    const label = $('#dayProgressLabel');
+    if (label) {
+        const startFormatted = formatHourToAMPM(state.dayStartHour);
+        const endFormatted = formatHourToAMPM(state.dayEndHour);
+        label.textContent = `Day Progress (${startFormatted} - ${endFormatted})`;
+    }
+}
+
+function formatHourToAMPM(hour) {
+    if (hour === 0) return '12am';
+    if (hour === 12) return '12pm';
+    if (hour < 12) return hour + 'am';
+    return (hour - 12) + 'pm';
 }
 
 function updateTime() {
@@ -990,4 +1164,102 @@ function updateTime() {
     const timeOpts = { hour: 'numeric', minute: '2-digit', hour12: true };
 
     $('#currentTime').textContent = now.toLocaleTimeString('en-US', timeOpts);
+
+    // Calculate day progress using user's custom day schedule
+    const startHour = state.dayStartHour;
+    const endHour = state.dayEndHour;
+    const totalDayMinutes = (endHour - startHour) * 60;
+
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTotalMinutes = currentHour * 60 + currentMinute;
+    const startMinutes = startHour * 60;
+    const endMinutes = endHour * 60;
+
+    let dayProgress = 0;
+    if (currentTotalMinutes <= startMinutes) {
+        dayProgress = 0;
+    } else if (currentTotalMinutes >= endMinutes) {
+        dayProgress = 100;
+    } else {
+        dayProgress = Math.round(((currentTotalMinutes - startMinutes) / totalDayMinutes) * 100);
+    }
+
+    // Update day progress display
+    const progressFill = $('#dayProgressFill');
+    const progressPercent = $('#dayProgressPercent');
+
+    if (progressFill) progressFill.style.width = dayProgress + '%';
+    if (progressPercent) progressPercent.textContent = dayProgress + '%';
+}
+
+// ===== THEME SYSTEM =====
+const THEME_EMOJIS = {
+    unicorn: ['💕', '💖', '✨', '🌸', '💜', '🦋'],
+    garden: ['🌸', '🌺', '🌻', '🌷', '🌿', '🦋', '🐝'],
+    warm: ['✨', '🌟', '💫', '🔥', '☀️', '🌅'],
+    cozy: ['☕', '📚', '🧸', '🍂', '🕯️', '🧶']
+};
+
+function applyTheme(themeName) {
+    document.body.setAttribute('data-theme', themeName);
+
+    // Update theme buttons
+    $$('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === themeName);
+    });
+
+    // Update floating hearts with theme-specific emojis
+    updateFloatingHearts(themeName);
+}
+
+function initThemeListeners() {
+    $$('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const themeName = btn.dataset.theme;
+            state.theme = themeName;
+            applyTheme(themeName);
+            saveState();
+            showToast(`🎨 Theme changed to ${getThemeDisplayName(themeName)}!`);
+        });
+    });
+}
+
+function getThemeDisplayName(theme) {
+    const names = {
+        unicorn: 'Unicorn',
+        garden: 'Garden',
+        warm: 'Warm Lamps',
+        cozy: 'Cozy Sunday'
+    };
+    return names[theme] || theme;
+}
+
+function updateFloatingHearts(themeName) {
+    const container = $('#floatingHearts');
+    if (!container) return;
+
+    // Clear existing hearts
+    container.innerHTML = '';
+
+    // Get theme-specific emojis
+    const hearts = THEME_EMOJIS[themeName] || THEME_EMOJIS.unicorn;
+
+    // Create new hearts with theme emojis
+    function createHeart() {
+        const heart = document.createElement('div');
+        heart.className = 'floating-heart';
+        heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.animationDuration = (6 + Math.random() * 4) + 's';
+        heart.style.animationDelay = Math.random() * 2 + 's';
+        container.appendChild(heart);
+
+        setTimeout(() => heart.remove(), 12000);
+    }
+
+    // Create initial hearts
+    for (let i = 0; i < 5; i++) {
+        setTimeout(createHeart, i * 1000);
+    }
 }

@@ -53,16 +53,27 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Combined Greeting + Time Card -->
+            <!-- Combined Greeting + Time Card with Day Progress -->
             <div class="greeting-time-card" id="greetingTimeCard">
-                <div class="greeting-avatar" id="greetingAvatar">🌸</div>
-                <div class="greeting-info">
-                    <span class="greeting-hello" id="greetingHello">Good afternoon!</span>
-                    <span class="current-time" id="currentTime">2:47 PM</span>
+                <div class="greeting-top-row">
+                    <div class="greeting-avatar" id="greetingAvatar">🌸</div>
+                    <div class="greeting-info">
+                        <span class="greeting-hello" id="greetingHello">Good afternoon!</span>
+                        <span class="current-time" id="currentTime">2:47 PM</span>
+                    </div>
+                    <div class="streak-badge" id="streakBadge">
+                        <span class="streak-fire">🔥</span>
+                        <span class="streak-count" id="streakCount">0</span>
+                    </div>
                 </div>
-                <div class="streak-badge" id="streakBadge">
-                    <span class="streak-fire">🔥</span>
-                    <span class="streak-count" id="streakCount">0</span>
+                <div class="day-progress-container">
+                    <div class="day-progress-header">
+                        <span class="day-progress-label" id="dayProgressLabel">Day Progress (8am - 11pm)</span>
+                        <span class="day-progress-percent" id="dayProgressPercent">0%</span>
+                    </div>
+                    <div class="day-progress-bar">
+                        <div class="day-progress-fill" id="dayProgressFill" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
 
@@ -227,6 +238,44 @@
                         <span class="stat-icon">⏱️</span>
                         <span class="stat-value" id="totalTime">0h</span>
                         <span class="stat-label">Time Spent</span>
+                    </div>
+                </div>
+
+                <!-- Day Schedule Settings -->
+                <div class="day-schedule-section">
+                    <h3>⏰ My Day Schedule</h3>
+                    <div class="schedule-inputs">
+                        <div class="schedule-input-group">
+                            <label for="dayStartInput">Day Starts</label>
+                            <input type="time" id="dayStartInput" value="08:00">
+                        </div>
+                        <div class="schedule-input-group">
+                            <label for="dayEndInput">Day Ends</label>
+                            <input type="time" id="dayEndInput" value="23:00">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theme Selector -->
+                <div class="theme-section">
+                    <h3>🎨 Theme</h3>
+                    <div class="theme-options">
+                        <button class="theme-btn active" data-theme="unicorn">
+                            <div class="theme-preview"></div>
+                            <span class="theme-name">🦄 Unicorn</span>
+                        </button>
+                        <button class="theme-btn" data-theme="garden">
+                            <div class="theme-preview"></div>
+                            <span class="theme-name">🌸 Garden</span>
+                        </button>
+                        <button class="theme-btn" data-theme="warm">
+                            <div class="theme-preview"></div>
+                            <span class="theme-name">🪔 Warm Lamps</span>
+                        </button>
+                        <button class="theme-btn" data-theme="cozy">
+                            <div class="theme-preview"></div>
+                            <span class="theme-name">☕ Cozy Sunday</span>
+                        </button>
                     </div>
                 </div>
 

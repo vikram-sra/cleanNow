@@ -1,6 +1,6 @@
-// CleanNow Service Worker - Offline Support
+// CleanNow Service Worker - Offline Support with Auto-Update
 
-const CACHE_NAME = 'cleannow-v1';
+const CACHE_NAME = 'cleannow-v2';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -19,8 +19,14 @@ self.addEventListener('install', (event) => {
                 console.log('Caching app assets');
                 return cache.addAll(ASSETS_TO_CACHE);
             })
-            .then(() => self.skipWaiting())
     );
+});
+
+// Listen for skip waiting message from client
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 // Activate event - clean old caches
