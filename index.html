@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CleanNow">
+    <meta name="theme-color" content="#a855f7">
+    <meta name="description" content="Mood-driven chore assistant with magical unicorn vibes">
+
+    <title>CleanNow ✨</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Pacifico&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Sparkle Background -->
+    <div class="sparkle-bg" id="sparkleBg"></div>
+
+    <!-- Floating Hearts -->
+    <div class="floating-hearts" id="floatingHearts"></div>
+
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">🦄</span>
+                <h1>CleanNow</h1>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn profile-btn" id="profileBtn" aria-label="Profile">
+                    <span class="btn-icon">👤</span>
+                    <span class="btn-pulse"></span>
+                </button>
+                <button class="header-btn history-btn" id="historyBtn" aria-label="History">
+                    <span class="btn-icon">📜</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Greeting Card -->
+            <div class="greeting-card" id="greetingCard">
+                <div class="greeting-avatar" id="greetingAvatar">🌸</div>
+                <div class="greeting-text">
+                    <span class="greeting-hello" id="greetingHello">Good morning!</span>
+                    <span class="greeting-name" id="greetingName">Sunshine ✨</span>
+                </div>
+                <div class="streak-badge" id="streakBadge">
+                    <span class="streak-fire">🔥</span>
+                    <span class="streak-count" id="streakCount">0</span>
+                </div>
+            </div>
+
+            <!-- Time Card -->
+            <div class="time-card" id="timeCard">
+                <span class="time-emoji" id="timeEmoji">✨</span>
+                <div class="time-display">
+                    <span class="current-time" id="currentTime">12:00 PM</span>
+                    <span class="current-date" id="currentDate">Saturday, Jan 18</span>
+                </div>
+                <span class="time-emoji" id="timeEmoji2">💫</span>
+            </div>
+
+            <!-- Mood Section -->
+            <section class="mood-section" id="moodSection">
+                <h2 class="section-title">How are you feeling? ✨</h2>
+
+                <!-- Emoji Picker -->
+                <div class="mood-emojis">
+                    <button class="emoji-btn" data-mood="1" data-label="Exhausted">
+                        <span class="emoji-face">😫</span>
+                        <span class="emoji-label">Tired</span>
+                    </button>
+                    <button class="emoji-btn" data-mood="2" data-label="Sleepy">
+                        <span class="emoji-face">😴</span>
+                        <span class="emoji-label">Sleepy</span>
+                    </button>
+                    <button class="emoji-btn" data-mood="3" data-label="Okay">
+                        <span class="emoji-face">😐</span>
+                        <span class="emoji-label">Okay</span>
+                    </button>
+                    <button class="emoji-btn" data-mood="4" data-label="Good">
+                        <span class="emoji-face">😊</span>
+                        <span class="emoji-label">Good</span>
+                    </button>
+                    <button class="emoji-btn" data-mood="5" data-label="Energetic">
+                        <span class="emoji-face">⚡</span>
+                        <span class="emoji-label">Hyper!</span>
+                    </button>
+                </div>
+
+                <!-- Energy Slider -->
+                <div class="energy-slider-container">
+                    <div class="slider-track-wrapper">
+                        <input type="range" id="energySlider" min="1" max="5" value="3" class="energy-slider">
+                        <div class="slider-track-fill" id="sliderFill"></div>
+                    </div>
+                    <div class="slider-labels">
+                        <span>🐢 Low</span>
+                        <span>High 🚀</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Suggestions Section -->
+            <section class="suggestions-section" id="suggestionsSection">
+                <div class="section-header">
+                    <h2 class="section-title">Your Magic Tasks ✨</h2>
+                    <button class="focus-mode-btn" id="focusModeBtn">
+                        <span>🎯</span> Focus Mode
+                    </button>
+                </div>
+
+                <div class="chore-cards" id="choreCards">
+                    <!-- Chore cards will be dynamically inserted here -->
+                </div>
+
+                <!-- Break Suggestion -->
+                <div class="break-suggestion hidden" id="breakSuggestion">
+                    <div class="break-card">
+                        <div class="break-confetti"></div>
+                        <span class="break-icon">🌈</span>
+                        <h3>Time for a break!</h3>
+                        <p id="breakActivity">How about reading a book?</p>
+                        <button class="skip-break-btn" id="skipBreakBtn">Skip Break</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Current Task Section -->
+            <section class="current-task-section hidden" id="currentTaskSection">
+                <div class="current-task-card">
+                    <div class="task-sparkles"></div>
+                    <div class="task-header">
+                        <span class="task-icon" id="currentTaskIcon">🧹</span>
+                        <h3 id="currentTaskName">Doing the Dishes</h3>
+                    </div>
+                    <div class="task-timer" id="taskTimer">00:00</div>
+                    <div class="task-progress-ring">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="progress-bg" cx="50" cy="50" r="45" />
+                            <circle class="progress-bar" cx="50" cy="50" r="45" id="progressRing" />
+                        </svg>
+                    </div>
+                    <div class="task-actions">
+                        <button class="complete-btn" id="completeTaskBtn">
+                            <span class="btn-sparkle">✨</span>
+                            Done!
+                        </button>
+                        <button class="skip-btn" id="skipTaskBtn">⏭️ Skip</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Profile Panel -->
+        <div class="profile-panel hidden" id="profilePanel">
+            <div class="panel-header">
+                <h2>🌟 My Profile</h2>
+                <button class="close-panel-btn" id="closeProfileBtn">✕</button>
+            </div>
+
+            <div class="profile-content">
+                <!-- Avatar & Name -->
+                <div class="profile-avatar-section">
+                    <div class="avatar-picker" id="avatarPicker">
+                        <span class="current-avatar" id="currentAvatar">🌸</span>
+                        <button class="change-avatar-btn">Change</button>
+                    </div>
+                    <input type="text" class="name-input" id="nameInput" placeholder="Your Name" maxlength="20">
+                </div>
+
+                <!-- Avatar Options (Hidden by default) -->
+                <div class="avatar-options hidden" id="avatarOptions">
+                    <div class="avatar-grid">
+                        <button class="avatar-option" data-avatar="🌸">🌸</button>
+                        <button class="avatar-option" data-avatar="🦋">🦋</button>
+                        <button class="avatar-option" data-avatar="🌺">🌺</button>
+                        <button class="avatar-option" data-avatar="🐱">🐱</button>
+                        <button class="avatar-option" data-avatar="🦄">🦄</button>
+                        <button class="avatar-option" data-avatar="🌙">🌙</button>
+                        <button class="avatar-option" data-avatar="⭐">⭐</button>
+                        <button class="avatar-option" data-avatar="🍭">🍭</button>
+                        <button class="avatar-option" data-avatar="🎀">🎀</button>
+                        <button class="avatar-option" data-avatar="💎">💎</button>
+                        <button class="avatar-option" data-avatar="🔮">🔮</button>
+                        <button class="avatar-option" data-avatar="🧸">🧸</button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <span class="stat-icon">✅</span>
+                        <span class="stat-value" id="totalCompleted">0</span>
+                        <span class="stat-label">Tasks Done</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">🔥</span>
+                        <span class="stat-value" id="currentStreak">0</span>
+                        <span class="stat-label">Day Streak</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">⏱️</span>
+                        <span class="stat-value" id="totalTime">0h</span>
+                        <span class="stat-label">Time Spent</span>
+                    </div>
+                </div>
+
+                <!-- My Chores Section -->
+                <div class="editable-list-section">
+                    <div class="list-header">
+                        <h3>🧹 My Chores</h3>
+                        <button class="add-item-btn" id="addChoreBtn">+ Add</button>
+                    </div>
+                    <div class="editable-list" id="choresList">
+                        <!-- Chores will be dynamically inserted -->
+                    </div>
+                </div>
+
+                <!-- My Hobbies Section -->
+                <div class="editable-list-section">
+                    <div class="list-header">
+                        <h3>🌈 My Hobbies</h3>
+                        <button class="add-item-btn" id="addHobbyBtn">+ Add</button>
+                    </div>
+                    <div class="editable-list" id="hobbiesList">
+                        <!-- Hobbies will be dynamically inserted -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Item Modal -->
+        <div class="add-modal hidden" id="addModal">
+            <div class="modal-content">
+                <h3 id="modalTitle">Add New Item</h3>
+                <div class="modal-form">
+                    <div class="emoji-picker-row">
+                        <label>Pick an icon:</label>
+                        <div class="mini-emoji-grid" id="miniEmojiGrid">
+                            <!-- Emojis will be inserted dynamically -->
+                        </div>
+                    </div>
+                    <input type="text" id="itemNameInput" placeholder="Name..." maxlength="30">
+                    <div class="priority-picker hidden" id="priorityPicker">
+                        <label>Priority:</label>
+                        <div class="priority-options">
+                            <button class="priority-opt" data-priority="1">⭐</button>
+                            <button class="priority-opt" data-priority="2">⭐⭐</button>
+                            <button class="priority-opt active" data-priority="3">⭐⭐⭐</button>
+                        </div>
+                    </div>
+                    <div class="energy-picker hidden" id="energyPicker">
+                        <label>Energy needed:</label>
+                        <div class="energy-options">
+                            <button class="energy-opt" data-energy="1">🐢</button>
+                            <button class="energy-opt" data-energy="2">🚶</button>
+                            <button class="energy-opt active" data-energy="3">🏃</button>
+                            <button class="energy-opt" data-energy="4">💪</button>
+                            <button class="energy-opt" data-energy="5">🚀</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-cancel" id="modalCancel">Cancel</button>
+                    <button class="modal-save" id="modalSave">Save ✨</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Focus Mode Overlay -->
+        <div class="focus-overlay hidden" id="focusOverlay">
+            <div class="focus-modal">
+                <h2>🎯 Focus Mode</h2>
+                <p>Select a chore to focus on:</p>
+                <div class="focus-chore-list" id="focusChoreList">
+                    <!-- Focus chores will be inserted here -->
+                </div>
+                <button class="cancel-focus-btn" id="cancelFocusBtn">Cancel</button>
+            </div>
+        </div>
+
+        <!-- History Panel -->
+        <div class="history-panel hidden" id="historyPanel">
+            <div class="panel-header">
+                <h2>📜 History</h2>
+                <button class="close-panel-btn" id="closeHistoryBtn">✕</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- History items will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div class="toast hidden" id="toast">
+            <span class="toast-icon">✨</span>
+            <span class="toast-message" id="toastMessage">Task completed!</span>
+        </div>
+
+        <!-- Reminder Notification -->
+        <div class="reminder hidden" id="reminder">
+            <div class="reminder-content">
+                <span class="reminder-icon">⏰</span>
+                <p id="reminderMessage">Don't forget about your chores!</p>
+                <button class="reminder-close" id="reminderClose">Got it!</button>
+            </div>
+        </div>
+
+        <!-- Celebration Overlay (Full Screen) -->
+        <div class="celebration hidden" id="celebration">
+            <div class="celebration-bg"></div>
+            <div class="confetti-container" id="confettiContainer"></div>
+            <div class="celebration-characters">
+                <span class="dancing-char" style="--delay: 0s; --x: 20%">🦄</span>
+                <span class="dancing-char" style="--delay: 0.2s; --x: 35%">🌟</span>
+                <span class="dancing-char" style="--delay: 0.4s; --x: 50%">🎉</span>
+                <span class="dancing-char" style="--delay: 0.6s; --x: 65%">✨</span>
+                <span class="dancing-char" style="--delay: 0.8s; --x: 80%">🦋</span>
+            </div>
+            <div class="celebration-message">
+                <span class="celebration-emoji" id="celebrationEmoji">🎉</span>
+                <h2 id="celebrationTitle">Amazing Job!</h2>
+                <p id="celebrationSubtitle">You're crushing it! ✨</p>
+            </div>
+            <div class="floating-stars" id="floatingStars"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
