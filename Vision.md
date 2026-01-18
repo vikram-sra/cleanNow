@@ -1,36 +1,50 @@
-The tool should be able to suggest what next should I do or clean,. also the chores around the house. it should:THE MAIN FACTOR OF DECISION IS MY MOOD> then the chore and priority and impacts of delays.
+# CleanNow Vision 🦄
 
+## Core Concept
+A smart, mood-driven chore assistant PWA that feels magical.
+**The main decision factor is: MY MOOD.**
 
-1. Check the time
-2. suggest the next chore to do
-3. the chore should also have a priority level
-4. keep track of all the chores done
-5. be smart enough to suggest the next chore to do based on the previous chores done and how long ago it was done, so I dont repeat the same chore in a short span of time.
-suggest open slots between chores to take a break or do something else not related to chores.
-6. Ask me about my mood and suggest me a chore to do based on my mood.
-7. Let me focus on a chore if I keep delaying it and suggest me to do it now. I dont want to mix others with the focus chore. 
-8. I live in a 2 bedroom apartment, 8th floor. The list of chores is: 
-    a. Doing the Dishes
-    b. Doing the Laundry
-    c. Folding the Laundry
-    d. Chnaging my sheets
-    e. Clean my Bathroom [once a week]
-    f. Floor broom and mop
-    g. oragnise room
-    h. checking my bills, electicity usage etc.
-    i. garbage
-    j. workstation management
-    k. misc
+The system balances:
+1. User's Mood (Energy Level)
+2. Chore Priority
+3. Impact of Delays (Frequency)
 
-    Altearnate things I can do in free times:
-    a. raeding a book
-    b. paitinig
-    c. wacthing a show
-    d. practice dance
-    e. play with clay
-    f. self-care
-    g. misc
-    h. talk to a friend (long distance or time)
+## Key Workflows
 
+1. **Check-in**: Ask "How are you feeling?" (1-5 Energy Scale).
+2. **Suggest**: Recommend the top 3 chores based on mood and urgency.
+3. **Smart Timing**: Avoid repeating the same chore too often; suggest "Focus Mode" for delayed tasks.
+4. **Day Progress**: Visualize the day (Default: 8am - 11pm) with "chore dots" indicating optimal times.
+5. **Breaks**: Suggest relaxation activities (hobbies) between heavy chores.
 
-The UI Should be modern, next.js node.js html with UNICORN THEME, make its snappy, easily deployable on github pages, make it small, fast, and easy to use.
+## Chore Catalog
+*(Default list for 2-bedroom apartment)*
+
+| Chore | Frequency | Priority | Energy |
+|-------|-----------|----------|--------|
+| 🍽️ Doing the Dishes | Daily | High (3) | Low (2) |
+| 🗑️ Take Out Garbage | Every 2 Days | High (3) | Low (1) |
+| 🧺 Doing the Laundry | Every 3 Days | Med (2) | Med (3) |
+| 👕 Folding Laundry | Every 3 Days | Med (2) | Low (1) |
+| 💻 Workstation Mgmt | Every 3 Days | Low (1) | Low (2) |
+| 🧹 Floor Broom/Mop | Every 5 Days | Med (2) | High (4) |
+| 🛏️ Changing Sheets | Weekly | Med (2) | Med (3) |
+| 🚿 Clean Bathroom | Weekly | Med (2) | High (4) |
+| 📦 Organize Room | Weekly | Low (1) | Med (3) |
+| 📊 Check Bills | Weekly | Low (1) | Low (1) |
+
+## Hobbies (Break Suggestions)
+- 📚 Reading a book
+- 🎨 Painting
+- 📺 Watching a show
+- 💃 Practice dance
+- 🏺 Play with clay
+- 🧖 Self-care
+- 📞 Talk to a friend
+
+## Technical Requirements
+- **Stack**: Vanilla HTML5, CSS3, JavaScript (No frameworks for speed/simplicity).
+- **Architecture**: PWA (Progressive Web App).
+- **Theme**: Unicorn Theme (Pink/Purple/Cyan) + multiple aesthetic options.
+- **Performance**: Snappy, lightweight, works offline.
+- **Deployment**: GitHub Pages compatible.

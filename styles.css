@@ -2030,6 +2030,132 @@ body {
     display: none !important;
 }
 
+/* ===== ANIMATIONS & NEW UI ===== */
+@keyframes flyInCentral {
+    0% {
+        transform: scale(1) translate(0, 0);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(0.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(5);
+        opacity: 0;
+    }
+}
+
+.fly-anim {
+    animation: flyInCentral 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+/* Sound Toggle */
+.sound-section {
+    background: var(--glass-bg);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sound-section h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.sound-toggle-btn {
+    background: var(--gradient-cute);
+    border: none;
+    border-radius: var(--radius-xl);
+    padding: 8px 16px;
+    color: #1f2937;
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sound-toggle-btn.off {
+    background: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Enhanced Dots */
+.task-timing-dot {
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 10px rgba(255, 255, 255, 0.4);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    z-index: 3;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.task-timing-dot:hover {
+    transform: translateY(-50%) translateX(-50%) scale(1.6);
+    z-index: 10;
+    cursor: help;
+}
+
+.task-timing-dot.energy-4,
+.task-timing-dot.energy-5 {
+    background: #ef4444;
+    /* High energy - Red */
+    box-shadow: 0 0 8px #ef4444, 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.task-timing-dot.energy-3 {
+    background: #fbbf24;
+    /* Med energy - Yellow */
+    box-shadow: 0 0 8px #fbbf24, 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.task-timing-dot.energy-1,
+.task-timing-dot.energy-2 {
+    background: #22c55e;
+    /* Low energy - Green */
+    box-shadow: 0 0 8px #22c55e, 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Quick Win Style */
+.chore-card.priority-quick-win {
+    border-left: 5px solid #22d3ee;
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(255, 255, 255, 0.1));
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+    padding-right: 90px;
+    /* Ensure text doesn't hit badge */
+}
+
+.chore-card.priority-quick-win::after {
+    content: '⚡ Quick Win';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.7rem;
+    background: #22d3ee;
+    color: #0e7490;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 800;
+    box-shadow: 0 2px 5px rgba(34, 211, 238, 0.4);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 380px) {
     :root {

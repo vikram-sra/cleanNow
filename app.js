@@ -2,16 +2,16 @@
 
 // ===== DEFAULT DATA DEFINITIONS =====
 const DEFAULT_CHORES = [
-    { id: 'dishes', name: 'Doing the Dishes', icon: '🍽️', priority: 3, energyRequired: 2, frequency: 1 },
-    { id: 'laundry', name: 'Doing the Laundry', icon: '🧺', priority: 2, energyRequired: 3, frequency: 3 },
-    { id: 'folding', name: 'Folding the Laundry', icon: '👕', priority: 2, energyRequired: 1, frequency: 3 },
-    { id: 'sheets', name: 'Changing Sheets', icon: '🛏️', priority: 2, energyRequired: 3, frequency: 7 },
-    { id: 'bathroom', name: 'Clean Bathroom', icon: '🚿', priority: 2, energyRequired: 4, frequency: 7 },
-    { id: 'floor', name: 'Floor Broom & Mop', icon: '🧹', priority: 2, energyRequired: 4, frequency: 5 },
-    { id: 'organize', name: 'Organize Room', icon: '📦', priority: 1, energyRequired: 3, frequency: 7 },
-    { id: 'bills', name: 'Check Bills & Usage', icon: '📊', priority: 1, energyRequired: 1, frequency: 7 },
-    { id: 'garbage', name: 'Take Out Garbage', icon: '🗑️', priority: 3, energyRequired: 1, frequency: 2 },
-    { id: 'workstation', name: 'Workstation Management', icon: '💻', priority: 1, energyRequired: 2, frequency: 3 }
+    { id: 'dishes', name: 'Doing the Dishes', icon: '🍽️', priority: 3, energyRequired: 2, frequency: 1, duration: 15 },
+    { id: 'laundry', name: 'Doing the Laundry', icon: '🧺', priority: 2, energyRequired: 3, frequency: 3, duration: 20 },
+    { id: 'folding', name: 'Folding the Laundry', icon: '👕', priority: 2, energyRequired: 1, frequency: 3, duration: 15 },
+    { id: 'sheets', name: 'Changing Sheets', icon: '🛏️', priority: 2, energyRequired: 3, frequency: 7, duration: 10 },
+    { id: 'bathroom', name: 'Clean Bathroom', icon: '🚿', priority: 2, energyRequired: 4, frequency: 7, duration: 30 },
+    { id: 'floor', name: 'Floor Broom & Mop', icon: '🧹', priority: 2, energyRequired: 4, frequency: 5, duration: 45 },
+    { id: 'organize', name: 'Organize Room', icon: '📦', priority: 1, energyRequired: 3, frequency: 7, duration: 20 },
+    { id: 'bills', name: 'Check Bills & Usage', icon: '📊', priority: 1, energyRequired: 1, frequency: 7, duration: 10 },
+    { id: 'garbage', name: 'Take Out Garbage', icon: '🗑️', priority: 3, energyRequired: 1, frequency: 2, duration: 5 },
+    { id: 'workstation', name: 'Workstation Management', icon: '💻', priority: 1, energyRequired: 2, frequency: 3, duration: 10 }
 ];
 
 const DEFAULT_HOBBIES = [
@@ -37,6 +37,9 @@ let state = {
     dayStartHour: 8,
     dayEndHour: 23,
 
+    // Settings
+    soundEnabled: true,
+
     // Theme
     theme: 'unicorn',
 
@@ -48,6 +51,7 @@ let state = {
     currentTask: null,
     taskStartTime: null,
     taskTimerInterval: null,
+    currentTaskDuration: 0, // In minutes
 
     // Stats
     choresCompleted: 0,
@@ -66,7 +70,8 @@ let state = {
     editingItemId: null,
     selectedEmoji: null,
     selectedPriority: 2,
-    selectedEnergy: 3
+    selectedEnergy: 3,
+    selectedDuration: 15
 };
 
 // ===== DOM ELEMENTS =====
@@ -352,8 +357,34 @@ function renderProfileStats() {
     $('#totalTime').textContent = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 
     // Set day schedule inputs
-    $('#dayStartInput').value = state.dayStartHour.toString().padStart(2, '0') + ':00';
     $('#dayEndInput').value = state.dayEndHour.toString().padStart(2, '0') + ':00';
+
+    // Add Sound Toggle Section if not present in HTML structure yet, we append it to stats or schedule
+    // Let's create a dedicated settings section for it
+    const existingSoundSection = $('.sound-section');
+    if (!existingSoundSection) {
+        const scheduleSection = $('.day-schedule-section');
+        const soundSection = document.createElement('div');
+        soundSection.className = 'sound-section';
+        soundSection.innerHTML = `
+            <h3>🔊 Sound Settings</h3>
+            <button id="soundToggleBtn" class="sound-toggle-btn ${state.soundEnabled ? '' : 'off'}">
+                ${state.soundEnabled ? '🔊 On' : '🔇 Off'}
+            </button>
+        `;
+        // Insert after schedule section
+        scheduleSection.parentNode.insertBefore(soundSection, scheduleSection.nextSibling);
+
+        // Add intent listener
+        document.getElementById('soundToggleBtn').addEventListener('click', toggleSound);
+    } else {
+        // Update existing button state
+        const btn = document.getElementById('soundToggleBtn');
+        if (btn) {
+            btn.textContent = state.soundEnabled ? '🔊 On' : '🔇 Off';
+            btn.classList.toggle('off', !state.soundEnabled);
+        }
+    }
 }
 
 // ===== EDITABLE LISTS =====
@@ -529,6 +560,11 @@ function calculateChoreScore(chore) {
         urgencyScore = Math.min(overdue, 2) * 15;
     }
 
+    // Quick Win Bonus: If mood is low (1 or 2) and duration is short (< 10m), give huge boost
+    if (state.mood <= 2 && (chore.duration || 15) <= 10) {
+        return moodScore + priorityScore + urgencyScore + 30; // Boost to top
+    }
+
     return moodScore + priorityScore + urgencyScore;
 }
 
@@ -549,6 +585,7 @@ function getSuggestedChores() {
 }
 
 function getPriorityClass(chore) {
+    if (state.mood <= 2 && (chore.duration || 15) <= 10) return 'priority-quick-win'; // New class
     if (chore.priority === 3) return 'priority-high';
     if (chore.priority === 2) return 'priority-medium';
     return 'priority-low';
@@ -592,7 +629,7 @@ function renderSuggestions() {
                 </div>
                 <div class="chore-suggested-time">
                     <span class="suggested-time-icon">⏰</span>
-                    <span>${getSuggestedTime(chore)}</span>
+                    <span>${getSuggestedTime(chore)} • ${chore.duration || 15}m</span>
                 </div>
             </div>
         </div>
@@ -625,15 +662,36 @@ function startTask(choreId) {
     const chore = state.chores.find(c => c.id === choreId);
     if (!chore) return;
 
+    // Animation Logic
+    const card = document.querySelector(`.chore-card[data-chore-id="${choreId}"]`);
+    if (card) {
+        const icon = card.querySelector('.chore-icon');
+        const clone = icon.cloneNode(true);
+        const rect = icon.getBoundingClientRect();
+
+        clone.classList.add('fly-anim');
+        clone.style.left = rect.left + 'px';
+        clone.style.top = rect.top + 'px';
+        clone.style.fontSize = getComputedStyle(icon).fontSize;
+
+        document.body.appendChild(clone);
+
+        setTimeout(() => clone.remove(), 600);
+    }
+
     state.currentTask = chore;
     state.taskStartTime = Date.now();
+    state.currentTaskDuration = chore.duration || 15; // Default 15m
 
     $('#currentTaskIcon').textContent = chore.icon;
     $('#currentTaskName').textContent = chore.name;
     $('#taskTimer').textContent = '00:00';
 
-    $('#suggestionsSection').classList.add('hidden');
-    $('#currentTaskSection').classList.remove('hidden');
+    // Delay showing the new section slightly for animation
+    setTimeout(() => {
+        $('#suggestionsSection').classList.add('hidden');
+        $('#currentTaskSection').classList.remove('hidden');
+    }, 300);
 
     state.taskTimerInterval = setInterval(updateTaskTimer, 1000);
 
@@ -647,6 +705,16 @@ function updateTaskTimer() {
     const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
     const secs = (elapsed % 60).toString().padStart(2, '0');
     $('#taskTimer').textContent = `${mins}:${secs}`;
+
+    // Update progress ring (countdown style based on estimated duration)
+    const totalSeconds = state.currentTaskDuration * 60;
+    let percent = (elapsed / totalSeconds) * 100;
+    if (percent > 100) percent = 100;
+
+    // 283 is circumference of circle r=45
+    const offset = 283 - (percent / 100) * 283;
+    const ring = $('#progressRing');
+    if (ring) ring.style.strokeDashoffset = offset;
 }
 
 function completeCurrentTask() {
@@ -954,6 +1022,8 @@ function showReminder(message) {
 }
 
 function playNotificationSound() {
+    if (!state.soundEnabled) return;
+
     try {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
@@ -981,6 +1051,7 @@ function saveState() {
         dayEndHour: state.dayEndHour,
         theme: state.theme,
         mood: state.mood,
+        soundEnabled: state.soundEnabled,
         focusChoreId: state.focusChoreId,
         choresCompleted: state.choresCompleted,
         totalTimeSpent: state.totalTimeSpent,
@@ -1005,6 +1076,7 @@ function loadState() {
             state.dayEndHour = parsed.dayEndHour ?? 23;
             state.theme = parsed.theme || 'unicorn';
             state.mood = parsed.mood || 3;
+            state.soundEnabled = parsed.soundEnabled !== undefined ? parsed.soundEnabled : true;
             state.focusChoreId = parsed.focusChoreId || null;
             state.choresCompleted = parsed.choresCompleted || 0;
             state.totalTimeSpent = parsed.totalTimeSpent || 0;
@@ -1196,33 +1268,76 @@ function updateTime() {
     updateTaskDots(dayProgress);
 }
 
-// Render dots for task timings on the day progress bar
+// Update task timing dots on the day progress bar
 function updateTaskDots(currentProgress) {
     const container = $('#dayProgressDots');
     if (!container) return;
 
     // Use the same suggested chores that are displayed on cards
     const suggestedChores = getSuggestedChores();
-    const taskCount = suggestedChores.length;
-
-    // Calculate remaining space after current progress
-    const remainingPercent = 100 - currentProgress;
 
     // Clear and rebuild dots
     container.innerHTML = '';
 
-    if (taskCount > 0 && remainingPercent > 5) {
-        // Distribute dots evenly in the remaining portion of the day
-        for (let i = 0; i < taskCount; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'task-timing-dot';
-            // Position from current progress to end, evenly spaced
-            const offset = ((i + 1) / (taskCount + 1)) * remainingPercent;
-            const position = currentProgress + offset;
-            dot.style.left = position + '%';
-            container.appendChild(dot);
-        }
+    if (suggestedChores.length === 0) return;
+
+    // 1. Calculate the "Working Window" (Remaining day)
+    // We don't want dots to appear literally "now" (which is 0% from current)
+    // Start them slightly in the future (+2% visual space)
+    const safetyBuffer = 2;
+    let startPoint = currentProgress + safetyBuffer;
+
+    // If the day is basically over (> 95%), don't show dots
+    if (startPoint > 95) return;
+
+    const availableSpace = 98 - startPoint; // Use max 98% to avoid button overlap
+
+    // 2. Determine slot size
+    // Divide available space by number of tasks
+    const slotSize = availableSpace / suggestedChores.length;
+
+    // 3. Sort chores: High Energy/Priority should go FIRST (earliest slots)
+    // Primary Sort: Priority (Desc)
+    // Secondary Sort: Energy (Desc - get hard stuff done first)
+    const sortedChores = [...suggestedChores].sort((a, b) => {
+        if (b.priority !== a.priority) return b.priority - a.priority;
+        return b.energyRequired - a.energyRequired;
+    });
+
+    sortedChores.forEach((chore, i) => {
+        // Position at the START of its assigned slot + small offset
+        const slotStart = startPoint + (i * slotSize);
+        // Center the dot in the slot
+        const positionPercent = slotStart + (slotSize / 2);
+
+        const energy = chore.energyRequired || 3;
+
+        const dot = document.createElement('div');
+        dot.className = `task-timing-dot energy-${energy}`;
+        dot.style.left = positionPercent + '%';
+        dot.title = `${chore.name} (Recommended next)`;
+
+        container.appendChild(dot);
+    });
+}
+
+// ===== SOUND SETTINGS =====
+function initSoundToggle() {
+    // Add listener to sound setting if it exists (dynamically added to profile)
+    // We will render this in renderProfileStats
+}
+
+function toggleSound() {
+    state.soundEnabled = !state.soundEnabled;
+    saveState();
+
+    const btn = $('#soundToggleBtn');
+    if (btn) {
+        btn.textContent = state.soundEnabled ? '🔊 On' : '🔇 Off';
+        btn.classList.toggle('off', !state.soundEnabled);
     }
+
+    if (state.soundEnabled) playNotificationSound();
 }
 
 // ===== THEME SYSTEM =====
