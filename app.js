@@ -153,14 +153,14 @@ function updateScoreDashboard() {
     const dayOfWeek = now.getDay();
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
 
-    // Count tasks done today
+    // Count tasks done today (goal is 3 per day)
     const todayCount = state.history.filter(item => item.completedAt >= todayStart).length;
 
-    // Count tasks done this week
+    // Count tasks done this week (goal is 10 per week)
     const weekCount = state.history.filter(item => item.completedAt >= weekStart).length;
 
     // Update display
-    $('#todayScore').textContent = todayCount;
+    $('#todayScore').textContent = `${todayCount}/3`;
     $('#weeklyScore').textContent = `${weekCount}/10`;
     $('#totalScore').textContent = state.choresCompleted;
 }
