@@ -1191,6 +1191,38 @@ function updateTime() {
 
     if (progressFill) progressFill.style.width = dayProgress + '%';
     if (progressPercent) progressPercent.textContent = dayProgress + '%';
+
+    // Update task timing dots
+    updateTaskDots(dayProgress);
+}
+
+// Render dots for task timings on the day progress bar
+function updateTaskDots(currentProgress) {
+    const container = $('#dayProgressDots');
+    if (!container) return;
+
+    // Use the same suggested chores that are displayed on cards
+    const suggestedChores = getSuggestedChores();
+    const taskCount = suggestedChores.length;
+
+    // Calculate remaining space after current progress
+    const remainingPercent = 100 - currentProgress;
+
+    // Clear and rebuild dots
+    container.innerHTML = '';
+
+    if (taskCount > 0 && remainingPercent > 5) {
+        // Distribute dots evenly in the remaining portion of the day
+        for (let i = 0; i < taskCount; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'task-timing-dot';
+            // Position from current progress to end, evenly spaced
+            const offset = ((i + 1) / (taskCount + 1)) * remainingPercent;
+            const position = currentProgress + offset;
+            dot.style.left = position + '%';
+            container.appendChild(dot);
+        }
+    }
 }
 
 // ===== THEME SYSTEM =====

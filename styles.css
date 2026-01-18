@@ -2268,11 +2268,34 @@ body {
 
 .day-progress-bar {
     width: 100%;
-    height: 8px;
+    height: 10px;
     background: rgba(255, 255, 255, 0.15);
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
+    margin-top: 2px;
+}
+
+.day-progress-dots {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.task-timing-dot {
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 10px rgba(255, 255, 255, 0.4);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) translateX(-50%);
+    z-index: 3;
 }
 
 .day-progress-fill {
@@ -2281,6 +2304,8 @@ body {
     border-radius: 10px;
     transition: width 0.5s ease;
     position: relative;
+    z-index: 1;
+    overflow: hidden;
 }
 
 .day-progress-fill::after {
@@ -2288,8 +2313,8 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     animation: progressShimmer 2s ease-in-out infinite;
 }
