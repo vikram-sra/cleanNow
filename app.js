@@ -1172,9 +1172,8 @@ if ('serviceWorker' in navigator) {
                         if (newWorker.state === 'installed') {
                             if (navigator.serviceWorker.controller) {
                                 // New update available!
-                                console.log('New version available!');
-                                newWorkerWaiting = newWorker;
-                                showUpdateNotification();
+                                console.log('New version available! Auto-updating...');
+                                newWorker.postMessage({ type: 'SKIP_WAITING' });
                             } else {
                                 // First install
                                 console.log('App ready for offline use');
@@ -1185,8 +1184,8 @@ if ('serviceWorker' in navigator) {
 
                 // Check if there's already a waiting service worker
                 if (registration.waiting) {
-                    newWorkerWaiting = registration.waiting;
-                    showUpdateNotification();
+                    console.log('Update waiting. Auto-updating...');
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
                 }
             })
             .catch(err => console.log('SW registration failed:', err));
@@ -1209,52 +1208,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===== UPDATE NOTIFICATION =====
-function showUpdateNotification() {
-    // Create update banner if it doesn't exist
-    if (!$('#updateBanner')) {
-        const banner = document.createElement('div');
-        banner.id = 'updateBanner';
-        banner.className = 'update-banner';
-        banner.innerHTML = `
-            <div class="update-content">
-                <span class="update-icon">✨</span>
-                <div class="update-text">
-                    <strong>New version available!</strong>
-                    <span>Tap to update CleanNow</span>
-                </div>
-            </div>
-            <div class="update-actions">
-                <button class="update-btn" id="updateBtn">Update Now</button>
-                <button class="update-dismiss" id="dismissUpdateBtn">Later</button>
-            </div>
-        `;
-        document.body.appendChild(banner);
-
-        // Add event listeners
-        $('#updateBtn').addEventListener('click', applyUpdate);
-        $('#dismissUpdateBtn').addEventListener('click', dismissUpdateBanner);
-
-        // Animate in
-        setTimeout(() => banner.classList.add('show'), 100);
-    }
-}
-
-function applyUpdate() {
-    if (newWorkerWaiting) {
-        // Tell the waiting service worker to skip waiting
-        newWorkerWaiting.postMessage({ type: 'SKIP_WAITING' });
-        showToast('🔄 Updating app...');
-    }
-    dismissUpdateBanner();
-}
-
-function dismissUpdateBanner() {
-    const banner = $('#updateBanner');
-    if (banner) {
-        banner.classList.remove('show');
-        setTimeout(() => banner.remove(), 300);
-    }
-}
+// ===== UPDATE NOTIFICATION REMOVED (Auto-update enabled) =====
 
 // ===== TIME DISPLAY =====
 function initTimeWeather() {
