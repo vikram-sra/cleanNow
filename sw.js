@@ -1,6 +1,6 @@
 // CleanNow Service Worker - Offline Support with Auto-Update
 
-const CACHE_NAME = 'cleannow-v2';
+const CACHE_NAME = 'cleannow-v3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -13,6 +13,9 @@ const ASSETS_TO_CACHE = [
 
 // Install event - cache assets
 self.addEventListener('install', (event) => {
+    // Force this service worker to become active immediately
+    self.skipWaiting();
+
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
