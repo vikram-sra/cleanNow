@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateGreeting();
     updateSliderFill();
     renderSuggestions();
-    renderHistory();
+    renderTodoList();
     renderProfileStats();
     renderChoresList();
     renderHobbiesList();
@@ -290,13 +290,14 @@ function initEventListeners() {
         saveState();
     });
 
-    // History panel
-    $('#historyBtn').addEventListener('click', () => {
-        $('#historyPanel').classList.remove('hidden');
+    // To-Do List panel
+    $('#todoBtn').addEventListener('click', () => {
+        $('#todoPanel').classList.remove('hidden');
+        renderTodoList();
     });
 
-    $('#closeHistoryBtn').addEventListener('click', () => {
-        $('#historyPanel').classList.add('hidden');
+    $('#closeTodoBtn').addEventListener('click', () => {
+        $('#todoPanel').classList.add('hidden');
     });
 
     // Focus mode
@@ -435,6 +436,7 @@ function deleteItem(id, type) {
         state.chores = state.chores.filter(c => c.id !== id);
         renderChoresList();
         renderSuggestions();
+        renderTodoList();
     } else {
         state.hobbies = state.hobbies.filter(h => h.id !== id);
         renderHobbiesList();
@@ -520,6 +522,7 @@ function saveNewItem() {
         });
         renderChoresList();
         renderSuggestions();
+        renderTodoList();
     } else {
         state.hobbies.push({
             id,
@@ -764,7 +767,7 @@ function completeCurrentTask() {
         renderSuggestions();
     }
 
-    renderHistory();
+    renderTodoList();
     saveState();
 }
 
@@ -839,75 +842,120 @@ function renderFocusChoreList() {
 }
 
 // ===== HISTORY =====
-function renderHistory() {
-    const container = $('#historyList');
+// ===== TO-DO LIST =====
+function renderTodoList() {
+    const container = $('#todoList');
+    if (!container) return;
 
-    if (state.history.length === 0) {
-        container.innerHTML = '<div class="history-empty">No chores completed yet. Get started! 🦄</div>';
+    if (state.chores.length === 0) {
+        container.innerHTML = '<div class="todo-empty">No chores added yet. Go to profile to add some! 🦄</div>';
         return;
     }
 
-    container.innerHTML = state.history.slice(0, 50).map((item, index) => `
-        <div class="history-item" data-index="${index}">
-            <span class="history-item-icon">${item.icon}</span>
-            <div class="history-item-info">
-                <div class="history-item-name">${item.name}</div>
-                <div class="history-item-time">${formatTime(item.completedAt)}</div>
-            </div>
-            <div class="history-item-actions">
-                <button class="history-redo-btn" data-index="${index}" title="Do again">🔁</button>
-                <button class="history-delete-btn" data-index="${index}" title="Remove">🗑️</button>
-            </div>
-        </div>
-    `).join('');
+    const now = new Date();
+    const todayStr = now.toDateString();
 
-    // Add event listeners for redo buttons
-    container.querySelectorAll('.history-redo-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            redoHistoryItem(parseInt(btn.dataset.index));
-        });
-    });
+    container.innerHTML = state.chores.map((chore, index) => {
+        const lastDone = state.choreDates[chore.id];
+        const isDoneToday = lastDone && new Date(lastDone).toDateString() === todayStr;
 
-    // Add event listeners for delete buttons
-    container.querySelectorAll('.history-delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            deleteHistoryItem(parseInt(btn.dataset.index));
+        // Calculate next due date
+        let nextDueText = '';
+        if (lastDone) {
+            const nextDueDate = new Date(lastDone + (chore.frequency || 1) * 24 * 60 * 60 * 1000);
+            const daysUntil = Math.ceil((nextDueDate - now) / (1000 * 60 * 60 * 24));
+
+            if (daysUntil <= 0 && !isDoneToday) {
+                nextDueText = 'Due now! ⏰';
+            } else if (isDoneToday) {
+                nextDueText = `Next: ${nextDueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+            } else {
+                nextDueText = `Due in ${daysUntil}d`;
+            }
+        } else {
+            nextDueText = 'Never done';
+        }
+
+        return `
+            <div class="todo-item ${isDoneToday ? 'completed' : ''}" data-id="${chore.id}">
+                <div class="todo-checkbox-wrapper">
+                    <input type="checkbox" class="todo-checkbox" ${isDoneToday ? 'checked' : ''} data-id="${chore.id}">
+                </div>
+                <span class="todo-item-icon">${chore.icon}</span>
+                <div class="todo-item-info">
+                    <div class="todo-item-name">${chore.name}</div>
+                    <div class="todo-item-status">
+                        ${isDoneToday ? '✅ Done for today' : '⬜ To do'} 
+                        ${nextDueText ? `• <span class="todo-scheduled-badge">${nextDueText}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Add event listeners for checkboxes
+    container.querySelectorAll('.todo-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            toggleChoreTodo(cb.dataset.id, e.target.checked);
         });
     });
 }
 
-function redoHistoryItem(index) {
-    const item = state.history[index];
-    if (!item) return;
+function toggleChoreTodo(choreId, completed) {
+    const chore = state.chores.find(c => c.id === choreId);
+    if (!chore) return;
 
-    // Reset the chore's last done date so it shows up in suggestions
-    delete state.choreDates[item.choreId];
+    if (completed) {
+        // Mark as completed
+        const historyItem = {
+            choreId: chore.id,
+            name: chore.name,
+            icon: chore.icon,
+            completedAt: Date.now(),
+            duration: 0 // Manual check is instant
+        };
+        state.history.unshift(historyItem);
+        state.choreDates[chore.id] = Date.now();
+        state.choresCompleted++;
 
-    // Close history panel
-    $('#historyPanel').classList.add('hidden');
+        // Update streak
+        const today = new Date().toDateString();
+        if (state.lastActiveDate !== today) {
+            state.streak++;
+        }
+        state.lastActiveDate = today;
 
-    saveState();
-    renderSuggestions();
-    showToast(`🔁 ${item.name} added back to tasks!`);
-}
+        showToast(`✨ ${chore.name} finished!`);
+        triggerCelebration();
+    } else {
+        // Unmark as completed
+        // Find the index of the last completion for this chore today
+        const today = new Date().toDateString();
+        const historyIndex = state.history.findIndex(h =>
+            h.choreId === choreId && new Date(h.completedAt).toDateString() === today
+        );
 
-function deleteHistoryItem(index) {
-    const item = state.history[index];
-    if (!item) return;
+        if (historyIndex !== -1) {
+            state.history.splice(historyIndex, 1);
 
-    state.history.splice(index, 1);
+            // Re-calculate last done date for this chore
+            const previousCompletion = state.history.find(h => h.choreId === choreId);
+            if (previousCompletion) {
+                state.choreDates[choreId] = previousCompletion.completedAt;
+            } else {
+                delete state.choreDates[choreId];
+            }
 
-    // Adjust stats
-    if (state.choresCompleted > 0) state.choresCompleted--;
-    state.totalTimeSpent -= item.duration || 0;
-    if (state.totalTimeSpent < 0) state.totalTimeSpent = 0;
+            if (state.choresCompleted > 0) state.choresCompleted--;
+            showToast(`🗑️ ${chore.name} moved back to To-Do`);
+        }
+    }
 
-    saveState();
-    renderHistory();
+    updateGreeting();
     renderProfileStats();
-    showToast('🗑️ Removed from history');
+    renderSuggestions();
+    renderTodoList();
+    saveState();
 }
 
 function formatTime(timestamp) {
